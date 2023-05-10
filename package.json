@@ -1,7 +1,7 @@
 {
-  "name": "@snyk-labs/modern-npm-package",
-  "version": "0.0.0-development",
-  "description": "An npm package for demonstration purposes using TypeScript to build for both the ECMAScript Module format (i.e. ESM or ES Module) and CommonJS Module format. It can be used in Node.js and browser applications.",
+  "name": "seqness",
+  "version": "0.0.1",
+  "description": "State manager",
   "exports": {
     ".": {
       "import": {
@@ -16,17 +16,18 @@
   },
   "types": "./lib/cjs/types/index.d.ts",
   "main": "./lib/cjs/index.js",
+  "module": "./lib/esm/index.mjs",
   "files": [
     "lib/**/*"
   ],
   "scripts": {
     "clean": "rm -rf ./lib",
-    "build": "npm run clean && npm run build:esm && npm run build:cjs",
+    "build": "yarn clean && yarn build:esm && yarn build:cjs",
     "build:esm": "tsc -p ./configs/tsconfig.esm.json && mv lib/esm/index.js lib/esm/index.mjs",
     "build:cjs": "tsc -p ./configs/tsconfig.cjs.json",
     "test": "mocha",
     "semantic-release": "semantic-release",
-    "prepack": "npm run build"
+    "prepack": "yarn build"
   },
   "release": {
     "branches": [
@@ -41,24 +42,12 @@
     "url": "https://github.com/snyk-labs/modern-npm-package.git"
   },
   "keywords": [
-    "npm",
-    "javascript",
     "typescript",
-    "esm",
-    "cjs",
-    "nodejs",
-    "commonjs",
-    "ecmascript",
-    "beginner",
-    "example",
-    "demonstration"
+    "state",
+    "chains"
   ],
-  "author": "Snyk Labs",
+  "author": "Daniil Tarasov",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/snyk-labs/modern-npm-package/issues"
-  },
-  "homepage": "https://github.com/snyk-labs/modern-npm-package#readme",
   "devDependencies": {
     "@types/mocha": "^9.1.1",
     "mocha": "^10.0.0",

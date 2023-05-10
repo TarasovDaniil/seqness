@@ -106,4 +106,4 @@ dist
 .dccache
 .DS_Store
 lib
-*.tgz
+.idea
