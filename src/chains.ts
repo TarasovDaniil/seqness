@@ -5,9 +5,12 @@ interface InnerChainsType {
   [key: string]: Chain
 }
 
+type OneOrMany<T> = T | [T, ...T[]]
+
 type TransformFn<T, D> = (value: T, ...args: any[]) => D
 
 interface TransformType<T = any, D = any> {
+  operation: 'transform'
   fn: TransformFn<T, D>
   deps: Unit<any>[] | undefined
 }
@@ -27,10 +30,12 @@ interface SpreadType<T = any> {
   scheme: SpreadScheme
 }
 
-type ValidateFn<T> = (value: T) => boolean
+type ValidateFn<T> = (value: T, ...args: any[]) => boolean
 
 interface ValidateType<T = any> {
+  operation: 'validate'
   fn: ValidateFn<T>
+  deps: Unit<any>[] | undefined
 }
 
 class Chain<Value = unknown> {
@@ -38,41 +43,60 @@ class Chain<Value = unknown> {
   protected chains: (Unit<any> | TransformType | SpreadType | ValidateType)[]
   protected value: any
   protected innerChains: InnerChainsType
+  protected isRunning: boolean
 
   constructor(unit?: Unit<Value>) {
     this.unit = unit
     this.unit?.subscribe(this.chainsRoadStart.bind(this))
     this.chains = []
+    if (unit) {
+      this.chains.push(unit)
+    }
     this.innerChains = {}
+    this.isRunning = false
   }
 
   trigger() {
     if (this.value !== undefined) {
+      this.isRunning = true
       this.chainsSub(0, this.value)
     }
   }
 
   private chainsRoadStart(value: MayBe<Value>) {
-    if (this.chains.length <= 0) {
-      return
-    }
-    this.chainsSub(0, value)
+    this.isRunning = true
+    this.chainsSub(1, value)
   }
 
   private chainsSub<D>(nextIndex: number, value: MayBe<D>) {
     if (this.chains.length <= nextIndex) {
+      this.isRunning = false
       return
     }
+    if (!this.isRunning) return
     const chain = this.chains[nextIndex]
     if (chain instanceof Unit) {
       chain.setState(value)
-    } else if ('deps' in chain) {
-      const transform = chain as TransformType
-      const val = transform.fn(
-        value,
-        ...(transform.deps?.map((unit) => unit.getState()) || [])
-      )
-      this.chainsSub(nextIndex + 1, val)
+    } else if ('operation' in chain) {
+      if (chain.operation === 'transform') {
+        const transform = chain as TransformType
+        const val = transform.fn(
+          value,
+          ...(transform.deps?.map((unit) => unit.getState()) || [])
+        )
+        this.chainsSub(nextIndex + 1, val)
+      } else if (chain.operation === 'validate') {
+        const validate = chain as ValidateType
+        if (
+          !validate.fn(
+            value,
+            ...(validate.deps?.map((unit) => unit.getState()) || [])
+          )
+        ) {
+          return
+        }
+        this.chainsSub(nextIndex + 1, value)
+      }
     } else if ('scheme' in chain) {
       const spread = chain as SpreadType
       const scheme = spread.fn(value)
@@ -87,12 +111,6 @@ class Chain<Value = unknown> {
         const innerChain = this.getChain(element, scheme[element])
         spread.scheme[element](innerChain).trigger()
       })
-    } else if ('fn' in chain) {
-      const validate = chain as ValidateType
-      if (!validate.fn(value)) {
-        return
-      }
-      this.chainsSub(nextIndex + 1, value)
     }
   }
 
@@ -117,7 +135,7 @@ class Chain<Value = unknown> {
     unit.subscribe(this.chainsSub.bind(this, this.chains.length))
   }
 
-  to<B>(unit: Unit<B> | Unit<any>[]) {
+  to<B>(unit: OneOrMany<Unit<B | any>>) {
     if (Array.isArray(unit)) {
       unit.forEach((item) => {
         this.chainsPush(item)
@@ -129,7 +147,10 @@ class Chain<Value = unknown> {
   }
 
   transform<T, D>(fn: TransformFn<T, D>, deps?: Unit<any>[]) {
-    this.chains.push({ fn, deps } as TransformType<T, D>)
+    this.chains.push({ fn, deps, operation: 'transform' } as TransformType<
+      T,
+      D
+    >)
     return this
   }
 
@@ -138,8 +159,9 @@ class Chain<Value = unknown> {
     return this
   }
 
-  validate<T>(fn: ValidateFn<T>) {
-    this.chains.push({ fn } as ValidateType<T>)
+  validate<T>(fn: ValidateFn<T>, deps?: Unit<any>[]) {
+    this.chains.push({ fn, deps, operation: 'validate' } as ValidateType<T>)
+    return this
   }
 }
 

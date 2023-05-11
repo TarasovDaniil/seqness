@@ -1,10 +1,11 @@
 import { MayBe, Subscriber, thunkFn, Unit as UnitMain } from './interfaces/unit'
+import { createEvent, Event } from './createEvent'
 
-export class Unit<Value> implements UnitMain<Value> {
+export abstract class Unit<Value> implements UnitMain<Value> {
   constructor(defaultValue?: Value) {
     this.subscribers = []
     this.defaultValue = defaultValue
-    this.currentValue = defaultValue
+    if (defaultValue !== undefined) this.setState(defaultValue)
   }
 
   protected currentValue: MayBe<Value>
@@ -39,22 +40,44 @@ export class Unit<Value> implements UnitMain<Value> {
 }
 
 export class Store<Value> extends Unit<Value> {
-  reset(): void {
-    this.currentValue = this.defaultValue
+  constructor(defaultValue?: Value) {
+    super(defaultValue)
+  }
+
+  setState(value: Value) {
+    if (value !== this.currentValue) {
+      super.setState(value)
+    }
   }
 }
-// вообще здесь стоит создать ивены на получение данных в случае ошибки и ожидания получения данных
+
 export class Thunk<Value, D> extends Unit<any> {
-  thunkFn: thunkFn<Value, D>
+  private readonly thunkFn: thunkFn<Value, D>
+  pending: Event<boolean>
+  error: Event<unknown>
 
   constructor(fn: thunkFn<Value, D>) {
     super()
     this.thunkFn = fn
+    this.pending = createEvent<boolean>()
+    this.error = createEvent<unknown>()
   }
 
-  setState(value: Value) {
-    this.thunkFn(value).then((res) => {
-      super.setState(res)
-    })
+  async setState(value: Value) {
+    this.pending(true)
+    try {
+      const data = await this.thunkFn(value)
+      super.setState(data)
+    } catch (e) {
+      this.error(e)
+    } finally {
+      this.pending(false)
+    }
+  }
+}
+
+export class EventType<T> extends Unit<T> {
+  constructor() {
+    super()
   }
 }

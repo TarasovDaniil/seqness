@@ -8,11 +8,3 @@ export interface Unit<Value> {
   getState(): MayBe<Value>
   setState(value: Value): void
 }
-
-export interface Store<Value> extends Unit<Value> {
-  reset(): void
-}
-
-export interface Event<Value> extends Unit<Value> {
-  (): void
-}
