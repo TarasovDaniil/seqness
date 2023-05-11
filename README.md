@@ -8,9 +8,9 @@ is a simple javascript app state manager. Has Typescript support out of the box.
     - [Store](#store)
     - [Event](#event)
   - [Chain](#chain)
-    - [chain.to](#chain.to)
-    - [chain.transform](#chain.transform)
-    - [chain.validate](#chain.validate)
+    - [chain.to](#chainto)
+    - [chain.transform](#chaintransform)
+    - [chain.validate](#chainvalidate)
 
 ## Installation
 
