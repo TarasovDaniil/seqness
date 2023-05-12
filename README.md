@@ -7,10 +7,12 @@ is a simple javascript app state manager. Has Typescript support out of the box.
   - [Units](#units)
     - [Store](#store)
     - [Event](#event)
+    - [Thunk](#thunk)
   - [Chain](#chain)
     - [chain.to](#chainto)
     - [chain.transform](#chaintransform)
     - [chain.validate](#chainvalidate)
+    - [chain.spread](#chainspread)
 
 ## Installation
 

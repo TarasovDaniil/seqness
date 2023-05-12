@@ -10,7 +10,9 @@
     "declarationMap": true,
     "allowSyntheticDefaultImports": true,
     "lib": ["es6", "dom"],
-    "target": "ES6"
+    "target": "ES6",
+    "rootDir": "./src",
+    "outDir": "./lib"
   },
   "files": ["./src/index.ts"]
 }
