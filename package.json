@@ -1,6 +1,6 @@
 {
   "name": "seqness",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "State manager",
   "exports": {
     ".": {
@@ -24,8 +24,6 @@
     "prebuild": "prettier --write \"{src,test}/**/*.{js,ts}\" \"**/*.md\"",
     "clean": "rm -rf ./lib",
     "build": "yarn clean && yarn prebuild && rollup -c",
-    "build:esm": "tsc -p ./tsconfig.esm.json",
-    "build:cjs": "tsc -p ./tsconfig.cjs.json",
     "test": "mocha",
     "semantic-release": "semantic-release",
     "prepack": "yarn build"

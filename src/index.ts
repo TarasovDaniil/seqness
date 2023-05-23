@@ -1,4 +1,5 @@
 export { chain, chainFromData } from './chains'
 export { createStore } from './createStore'
-export { createEvent } from './createEvent'
+export { createEvent, Event } from './createEvent'
 export { createThunk } from './createThunk'
+export { Unit, Thunk, Store } from './unit'

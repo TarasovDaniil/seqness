@@ -19,7 +19,7 @@ is a simple javascript app state manager. Has Typescript support out of the box.
 > You can use any package manager
 
 ```bash
-npm add seqness
+npm i seqness
 ```
 
 ## Documentation
